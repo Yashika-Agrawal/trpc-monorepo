@@ -26,6 +26,42 @@ export const responsesRouter = router({
         }
       }
 
+      const fields = await db.query.formFieldsTable.findMany({
+        where: eq(formFieldsTable.formId, input.formId),
+      });
+
+      // Build dynamic Zod schema for response validation
+      const schemaShape: Record<string, z.ZodTypeAny> = {};
+      for (const field of fields) {
+        let baseSchema: z.ZodTypeAny = z.string();
+
+        if (field.type === "email") {
+          baseSchema = z.string().email("Invalid email format");
+        } else if (field.type === "number" || field.type === "rating") {
+          baseSchema = z.string().refine(val => !isNaN(Number(val)), { message: "Must be a valid number" });
+        }
+
+        if (field.isRequired) {
+          if (baseSchema instanceof z.ZodString) {
+            baseSchema = baseSchema.min(1, `${field.label} is required`);
+          }
+        } else {
+          baseSchema = baseSchema.optional().or(z.literal(""));
+        }
+
+        schemaShape[field.id] = baseSchema;
+      }
+
+      const dynamicSchema = z.object(schemaShape);
+      
+      const answersObject = input.answers.reduce((acc, curr) => {
+        acc[curr.fieldId] = curr.value;
+        return acc;
+      }, {} as Record<string, string>);
+
+      // Validate using Zod (throws TRPC/Zod error if invalid)
+      dynamicSchema.parse(answersObject);
+
       const [response] = await db.insert(responsesTable).values({
         formId: input.formId,
         respondentEmail: input.respondentEmail,
