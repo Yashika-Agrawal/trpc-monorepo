@@ -51,17 +51,17 @@ export default function NewFormPage() {
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-2">Custom URL Slug</label>
-            <div className="flex">
-              <span className="p-3 bg-white/5 border border-white/20 border-r-0 rounded-l-lg text-gray-500">
-                streamyst.com/f/
+            <div className="flex bg-white/10 rounded-lg overflow-hidden border border-white/20">
+              <span className="px-4 py-3 bg-white/5 text-gray-400 font-mono text-sm border-r border-white/10 flex items-center">
+                typebuilder.com/f/
               </span>
               <input 
                 required
                 type="text" 
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="flex-1 p-3 rounded-r-lg bg-black border border-white/20 focus:border-purple-500 outline-none"
-                placeholder="feedback-survey"
+                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                className="flex-1 bg-transparent p-3 text-white focus:outline-none"
+                placeholder="my-awesome-form"
               />
             </div>
           </div>
