@@ -20,12 +20,25 @@ const openApiDocument = generateOpenApiDocument(serverRouter, {
 if (env.NODE_ENV !== "prod") {
   app.use(
     cors({
-      origin: "*",
+      origin: true,
+      credentials: true,
     }),
   );
 }
 
+import { rateLimit } from "express-rate-limit";
+
 app.use(express.json());
+
+// Basic rate limiting for all routes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+app.use(limiter);
 
 app.get("/", (req, res) => {
   return res.json({ message: "Streamyst is up and running..." });

@@ -17,6 +17,8 @@ const queryClient = new QueryClient({
   },
 });
 
+import { SessionProvider } from "next-auth/react";
+
 export const GlobalProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [trpcClient] = useState(() =>
     trpc.createClient({
@@ -24,18 +26,20 @@ export const GlobalProviders: React.FC<{ children: React.ReactNode }> = ({ child
     }),
   );
   return (
-    <QueryClientProvider client={queryClient}>
-      <NextThemesProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <trpc.Provider queryClient={queryClient} client={trpcClient}>
-          {children}
-          <Toaster />
-        </trpc.Provider>
-      </NextThemesProvider>
-    </QueryClientProvider>
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <NextThemesProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <trpc.Provider queryClient={queryClient} client={trpcClient}>
+            {children}
+            <Toaster />
+          </trpc.Provider>
+        </NextThemesProvider>
+      </QueryClientProvider>
+    </SessionProvider>
   );
 };
